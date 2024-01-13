@@ -1,4 +1,4 @@
-const textType = "TEXT_EMELEMT";
+const textType = "TEXT_ELEMENT";
 
 function createTextNode(text) {
   return {
