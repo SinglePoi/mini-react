@@ -1,5 +1,6 @@
 const textType = "TEXT_ELEMENT";
 let nextUnitOfWork = null;
+let root = null;
 
 function createTextNode(text) {
   return {
@@ -31,6 +32,8 @@ function render(el, container) {
       children: [el],
     },
   };
+
+  root = nextUnitOfWork;
 }
 
 function fiberLoop(deadline) {
@@ -42,7 +45,26 @@ function fiberLoop(deadline) {
     shouleYield = deadline.timeRemaining() < 1;
   }
 
+  if (!nextUnitOfWork && root) {
+    /**
+     * 统一提交意味着只进行一次挂载
+     */
+    commitRoot();
+  }
+
   requestIdleCallback(fiberLoop);
+}
+
+function commitRoot() {
+  commitWork(root.child);
+  root = null;
+}
+
+function commitWork(fiber) {
+  if (!fiber) return;
+  fiber.parent.dom.append(fiber.dom);
+  commitWork(fiber.child);
+  commitWork(fiber.sibling);
 }
 
 function createDom(type) {
@@ -86,7 +108,7 @@ function performfiberOfUnit(fiber) {
   if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
 
-    fiber.parent.dom.append(dom);
+    // fiber.parent.dom.append(dom);
 
     updateProps(dom, fiber.props);
   }
