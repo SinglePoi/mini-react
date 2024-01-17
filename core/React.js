@@ -110,21 +110,30 @@ function initChildren(fiber, children) {
   });
 }
 
-function performfiberOfUnit(fiber) {
-  const isFunctionComponent = typeof fiber.type === "function";
-  if (!isFunctionComponent) {
-    if (!fiber.dom) {
-      const dom = (fiber.dom = createDom(fiber.type));
-
-      updateProps(dom, fiber.props);
-    }
-  }
-
-  const children = isFunctionComponent
-    ? [fiber.type(fiber.props)]
-    : fiber.props.children;
+function updateFunctionComponent(fiber) {
+  const children = [fiber.type(fiber.props)];
   // DOM 树转换链表
   initChildren(fiber, children);
+}
+
+function udpateHostComponent(fiber) {
+  if (!fiber.dom) {
+    const dom = (fiber.dom = createDom(fiber.type));
+
+    updateProps(dom, fiber.props);
+  }
+  const children = fiber.props.children;
+  // DOM 树转换链表
+  initChildren(fiber, children);
+}
+
+function performfiberOfUnit(fiber) {
+  const isFunctionComponent = typeof fiber.type === "function";
+  if (isFunctionComponent) {
+    updateFunctionComponent(fiber);
+  } else {
+    udpateHostComponent(fiber);
+  }
 
   // 返回下一个任务
   if (fiber.child) return fiber.child;
