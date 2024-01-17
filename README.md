@@ -16,9 +16,10 @@
 
 ### 计划
 
-✏️ Step1 实现最简 mini-react
-🎈 Step2 实现 fiber 架构
-🧨 Step3 统一提交
+✏️ Step1 实现最简 mini-react  
+🎈 Step2 实现 fiber 架构  
+🧨 Step3 统一提交  
+🎊 Step4 实现 function component
 
 ### 内容
 
@@ -41,9 +42,19 @@
 - 浏览器的空闲时间是不确定的，但最后一步是可确定的
 - 在最后一部完成真实 DOM 的渲染，不仅可以提升用户体验，还可以节省性能消耗
 
+🎊 Step4 实现 function component
+
+- component 的类型为 function，需要通过调用才能获取到真实的 component
+- 将 funciton component 的 props 作为 function 的参数，使得 component 可以获取到参数
+- 因为 function component 的缘故，DOM 树的结构被拉长。转换链表时，需要获取到更深层次的 parent
+
 ### 收获
 
 - 数据结构的装箱比拆箱更重要，好的结构可以减轻后续算法处理的心智负担
 - requestIdleCallback API 接受一个函数，并在浏览器空闲时期执行，不影响关键事件
 - 学习的核心要点在于学习源码针对问题的解决思路，以及将思路应用到自身开发过程中的思考
 - 知识是可迁移的，如何运用知识是学习的首要目的
+
+### 感谢
+
+感谢崔学社提供的交流平台
