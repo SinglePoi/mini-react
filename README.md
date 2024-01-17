@@ -19,7 +19,8 @@
 ✏️ Step1 实现最简 mini-react  
 🎈 Step2 实现 fiber 架构  
 🧨 Step3 统一提交  
-🎊 Step4 实现 function component
+🎊 Step4 实现 function component  
+🎪 Step5 实现事件绑定
 
 ### 内容
 
@@ -47,6 +48,10 @@
 - component 的类型为 function，需要通过调用才能获取到真实的 component
 - 将 funciton component 的 props 作为 function 的参数，使得 component 可以获取到参数
 - 因为 function component 的缘故，DOM 树的结构被拉长。转换链表时，需要获取到更深层次的 parent
+
+🎪 Step5 实现事件绑定
+
+- 只要存在 onXxxx 格式的 props name，就可以认为是事件函数
 
 ### 收获
 
