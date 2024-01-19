@@ -21,6 +21,7 @@
 🧨 Step3 统一提交  
 🎊 Step4 实现 function component  
 🎪 Step5 实现事件绑定
+🎀 Step6 更新 props
 
 ### 内容
 
@@ -46,12 +47,17 @@
 🎊 Step4 实现 function component
 
 - component 的类型为 function，需要通过调用才能获取到真实的 component
-- 将 funciton component 的 props 作为 function 的参数，使得 component 可以获取到参数
-- 因为 function component 的缘故，DOM 树的结构被拉长。转换链表时，需要获取到更深层次的 parent
+- 将 fc 的 props 作为 function 的参数，使得 component 可以获取到参数
+- 因为 fc 的缘故，DOM 树的结构被拉长。转换链表时，需要获取到更深层次的 parent
 
 🎪 Step5 实现事件绑定
 
 - 只要存在 onXxxx 格式的 props name，就可以认为是事件函数
+
+🎀 Step6 更新 props
+
+- 到此需要调用 update 函数，启动 dom 的更新流程
+- 在重新转换链表结构时使用 alternate 属性映射老的 dom，这样就可以方便后续的对比
 
 ### 收获
 

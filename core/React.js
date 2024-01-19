@@ -1,6 +1,15 @@
 const textType = "TEXT_ELEMENT";
+/**@description 下一个任务 */
 let nextUnitOfWork = null;
+/**@description 根结点 */
 let root = null;
+/**@description 老的根结点 */
+let currentRoot = null;
+/**@description 伪枚举 */
+const EffectTag = Object.freeze({
+  PLACEMENT: "placement",
+  UPDATE: "udpate",
+});
 
 function createTextNode(text) {
   return {
@@ -58,17 +67,28 @@ function fiberLoop(deadline) {
 
 function commitRoot() {
   commitWork(root.child);
+  currentRoot = root;
   root = null;
 }
 
+/**
+ * 递归提交
+ * @param {*} fiber 结点
+ * @returns void
+ */
 function commitWork(fiber) {
   if (!fiber) return;
   let fiberParent = fiber.parent;
   while (!fiberParent.dom) {
     fiberParent = fiberParent.parent;
   }
-  if (fiber.dom) {
-    fiberParent.dom.append(fiber.dom);
+
+  if (fiber.effectTag === "update") {
+    updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
+  } else if (fiber.effectTag === "placement") {
+    if (fiber.dom) {
+      fiberParent.dom.append(fiber.dom);
+    }
   }
   commitWork(fiber.child);
   commitWork(fiber.sibling);
@@ -80,29 +100,69 @@ function createDom(type) {
     : document.createElement(type);
 }
 
-function updateProps(dom, props) {
-  Object.keys(props).forEach((key) => {
-    if (key.startsWith("on")) {
-      const event = key.slice(2).toLowerCase();
-      dom.addEventListener(event, props[key]);
-    }
+function updateProps(dom, nextProps, prevProps) {
+  // 老的有，新的没有
+  Object.keys(prevProps).forEach((key) => {
     if (key !== "children") {
-      dom[key] = props[key];
+      if (!(key in nextProps)) {
+        dom.removeAttribute(key);
+      }
+    }
+  });
+  // 新的有，老的没有
+  // 新的有，老的不一样
+  Object.keys(nextProps).forEach((key) => {
+    if (key !== "children") {
+      if (nextProps[key] !== prevProps[key]) {
+        if (key.startsWith("on")) {
+          const event = key.slice(2).toLowerCase();
+          dom.removeEventListener(event, prevProps[key]);
+          dom.addEventListener(event, nextProps[key]);
+        } else {
+          dom[key] = nextProps[key];
+        }
+      }
     }
   });
 }
 
 function initChildren(fiber, children) {
+  /**@description 对应的老结点*/
+  let oldFiber = fiber.alternate?.child;
   let prevChild = null;
   children.forEach((child, index) => {
-    const newFiber = {
-      type: child.type,
-      props: child.props,
-      child: null,
-      sibling: null,
-      parent: fiber,
-      dom: null,
-    };
+    /**@description 对比策略就是对比 type */
+    const isSameType = oldFiber && oldFiber.type === child.type;
+    let newFiber = null;
+    if (isSameType) {
+      newFiber = {
+        type: child.type,
+        props: child.props,
+        child: null,
+        sibling: null,
+        parent: fiber,
+        dom: oldFiber.dom, // 沿用老dom
+        effectTag: "update",
+        alternate: oldFiber,
+      };
+    } else {
+      newFiber = {
+        type: child.type,
+        props: child.props,
+        child: null,
+        sibling: null,
+        parent: fiber,
+        dom: null,
+        effectTag: "placement",
+      };
+    }
+
+    /**
+     * 下一次循环处理兄弟结点
+     */
+    if (oldFiber) {
+      oldFiber = oldFiber.sibling;
+    }
 
     if (index === 0) {
       fiber.child = newFiber;
@@ -124,7 +184,7 @@ function udpateHostComponent(fiber) {
   if (!fiber.dom) {
     const dom = (fiber.dom = createDom(fiber.type));
 
-    updateProps(dom, fiber.props);
+    updateProps(dom, fiber.props, {});
   }
   const children = fiber.props.children;
   // DOM 树转换链表
@@ -151,8 +211,21 @@ function performfiberOfUnit(fiber) {
 
 requestIdleCallback(fiberLoop);
 
+function update() {
+  // 新容器
+  nextUnitOfWork = {
+    dom: currentRoot.dom,
+    props: currentRoot.props,
+    alternate: currentRoot,
+  };
+
+  // 新的根结点
+  root = nextUnitOfWork;
+}
+
 const React = {
   render,
+  update,
   createElement,
 };
 
