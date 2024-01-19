@@ -1,8 +1,8 @@
 const textType = "TEXT_ELEMENT";
 /**@description 下一个任务 */
 let nextUnitOfWork = null;
-/**@description 根结点 */
-let root = null;
+/**@description work in progress 根结点 */
+let wipRoot = null;
 /**@description 老的根结点 */
 let currentRoot = null;
 /**@description 伪枚举 */
@@ -37,14 +37,14 @@ function createElement(type, props, ...children) {
 
 function render(el, container) {
   // 描述容器
-  nextUnitOfWork = {
+  wipRoot = {
     dom: container,
     props: {
       children: [el],
     },
   };
 
-  root = nextUnitOfWork;
+  nextUnitOfWork = wipRoot;
 }
 
 function fiberLoop(deadline) {
@@ -55,7 +55,7 @@ function fiberLoop(deadline) {
     shouleYield = deadline.timeRemaining() < 1;
   }
 
-  if (!nextUnitOfWork && root) {
+  if (!nextUnitOfWork && wipRoot) {
     /**
      * 统一提交意味着只进行一次挂载
      */
@@ -66,9 +66,9 @@ function fiberLoop(deadline) {
 }
 
 function commitRoot() {
-  commitWork(root.child);
-  currentRoot = root;
-  root = null;
+  commitWork(wipRoot.child);
+  currentRoot = wipRoot;
+  wipRoot = null;
 }
 
 /**
@@ -126,7 +126,7 @@ function updateProps(dom, nextProps, prevProps) {
   });
 }
 
-function initChildren(fiber, children) {
+function reconcileChildren(fiber, children) {
   /**@description 对应的老结点*/
   let oldFiber = fiber.alternate?.child;
   let prevChild = null;
@@ -177,7 +177,7 @@ function initChildren(fiber, children) {
 function updateFunctionComponent(fiber) {
   const children = [fiber.type(fiber.props)];
   // DOM 树转换链表
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 }
 
 function udpateHostComponent(fiber) {
@@ -188,7 +188,7 @@ function udpateHostComponent(fiber) {
   }
   const children = fiber.props.children;
   // DOM 树转换链表
-  initChildren(fiber, children);
+  reconcileChildren(fiber, children);
 }
 
 function performfiberOfUnit(fiber) {
@@ -213,14 +213,14 @@ requestIdleCallback(fiberLoop);
 
 function update() {
   // 新容器
-  nextUnitOfWork = {
+  wipRoot = {
     dom: currentRoot.dom,
     props: currentRoot.props,
     alternate: currentRoot,
   };
 
   // 新的根结点
-  root = nextUnitOfWork;
+  nextUnitOfWork = wipRoot;
 }
 
 const React = {
