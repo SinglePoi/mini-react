@@ -284,7 +284,15 @@ function useState(initial) {
   const oldHook = currentFiber.alternate?.stateHooks[stateHookIndex];
   const stateHook = {
     state: oldHook ? oldHook.state : initial,
+    queue: oldHook ? oldHook.queue : [],
   };
+
+  // 统一执行更新
+  stateHook.queue.forEach((action) => {
+    stateHook.state = action(stateHook.state);
+  });
+
+  stateHook.queue = [];
 
   stateHookIndex++;
   stateHooks.push(stateHook);
@@ -292,7 +300,8 @@ function useState(initial) {
   currentFiber.stateHooks = stateHooks;
 
   function setState(action) {
-    stateHook.state = action(stateHook.state);
+    stateHook.queue.push(typeof action === "function" ? action : () => actino);
+
     // 新容器
     wipRoot = {
       ...currentFiber,

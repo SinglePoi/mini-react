@@ -20,9 +20,9 @@
 🎈 Step2 实现 fiber 架构  
 🧨 Step3 统一提交  
 🎊 Step4 实现 function component  
-🎪 Step5 实现事件绑定
-🎀 Step6 更新 props
-🕶️ Step7 更新 children
+🎪 Step5 实现事件绑定  
+🎀 Step6 更新 props  
+🕶️ Step7 更新 children  
 💎 Step8 实现 useState
 
 ### 内容
