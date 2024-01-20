@@ -204,6 +204,11 @@ function reconcileChildren(fiber, children) {
 
     prevChild = newFiber;
   });
+  // 如果还存在 oldFiber 需要去删除
+  while (oldFiber) {
+    deletions.push(oldFiber);
+    oldFiber = oldFiber.sibling;
+  }
 }
 
 function updateFunctionComponent(fiber) {
