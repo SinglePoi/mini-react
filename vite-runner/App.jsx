@@ -1,19 +1,22 @@
 import React from "../core/React.js";
-// const app = React.createElement("div", { id: "id" }, "app");
 
-let count = 10;
-let props = { id: "22222" };
+let showBar = false;
 function Counter() {
-  function handleClick() {
-    // console.log("click", count);
-    count++;
-    props = {};
+  function Foo() {
+    return <div>foo</div>;
+  }
+  const bar = <p>bar</p>;
+
+  function handleShowBar() {
+    showBar = !showBar;
     React.update();
   }
+
   return (
-    <div {...props}>
-      count: {count}
-      <button onClick={handleClick}>click</button>
+    <div>
+      Counter
+      <div>{showBar ? bar : <Foo></Foo>}</div>
+      <button onClick={handleShowBar}>showBar</button>
     </div>
   );
 }

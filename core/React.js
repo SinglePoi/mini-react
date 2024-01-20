@@ -10,6 +10,8 @@ const EffectTag = Object.freeze({
   PLACEMENT: "placement",
   UPDATE: "udpate",
 });
+/**@description 待删除老结点 */
+let deletions = [];
 
 function createTextNode(text) {
   return {
@@ -66,9 +68,33 @@ function fiberLoop(deadline) {
 }
 
 function commitRoot() {
+  deletions.forEach(commitDeletion);
   commitWork(wipRoot.child);
   currentRoot = wipRoot;
   wipRoot = null;
+  deletions = [];
+}
+
+function commitDeletion(fiber) {
+  if (fiber.dom) {
+    let fiberParent = findParent(fiber);
+    fiberParent.dom.removeChild(fiber.dom);
+  } else {
+    commitDeletion(fiber.child);
+  }
+}
+
+/**
+ * 逐层查询真实的父节点
+ * @param {*} fiber
+ * @returns fiber parent
+ */
+function findParent(fiber) {
+  let fiberParent = fiber.parent;
+  while (!fiberParent.dom) {
+    fiberParent = fiberParent.parent;
+  }
+  return fiberParent;
 }
 
 /**
@@ -78,10 +104,7 @@ function commitRoot() {
  */
 function commitWork(fiber) {
   if (!fiber) return;
-  let fiberParent = fiber.parent;
-  while (!fiberParent.dom) {
-    fiberParent = fiberParent.parent;
-  }
+  let fiberParent = findParent(fiber);
 
   if (fiber.effectTag === "update") {
     updateProps(fiber.dom, fiber.props, fiber.alternate?.props);
@@ -126,6 +149,11 @@ function updateProps(dom, nextProps, prevProps) {
   });
 }
 
+/**
+ * 转换链表
+ * @param {*} fiber dom
+ * @param {*} children
+ */
 function reconcileChildren(fiber, children) {
   /**@description 对应的老结点*/
   let oldFiber = fiber.alternate?.child;
@@ -155,6 +183,10 @@ function reconcileChildren(fiber, children) {
         dom: null,
         effectTag: "placement",
       };
+
+      if (oldFiber) {
+        deletions.push(oldFiber);
+      }
     }
 
     /**

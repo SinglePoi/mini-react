@@ -22,6 +22,7 @@
 🎊 Step4 实现 function component  
 🎪 Step5 实现事件绑定
 🎀 Step6 更新 props
+🕶️ Step7 更新 children
 
 ### 内容
 
@@ -58,6 +59,10 @@
 
 - 到此需要调用 update 函数，启动 dom 的更新流程
 - 在重新转换链表结构时使用 alternate 属性映射老的 dom，这样就可以方便后续的对比
+
+🕶️ Step7 更新 children
+
+- 在新的链表创建过程中，收集需要移除的老节点，并在最后统一删除
 
 ### 收获
 
