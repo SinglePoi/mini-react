@@ -12,6 +12,8 @@ const EffectTag = Object.freeze({
 });
 /**@description 待删除老结点 */
 let deletions = [];
+/**@description 更新的开始节点 */
+let wipFiber = null;
 
 function createTextNode(text) {
   return {
@@ -53,6 +55,11 @@ function fiberLoop(deadline) {
   let shouleYield = false;
   while (!shouleYield && nextUnitOfWork) {
     nextUnitOfWork = performfiberOfUnit(nextUnitOfWork);
+
+    // 更新节点的结束标志
+    if (wipRoot?.sibling?.type === nextUnitOfWork?.type) {
+      nextUnitOfWork = undefined;
+    }
 
     shouleYield = deadline.timeRemaining() < 1;
   }
@@ -216,6 +223,7 @@ function reconcileChildren(fiber, children) {
 }
 
 function updateFunctionComponent(fiber) {
+  wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   // DOM 树转换链表
   reconcileChildren(fiber, children);
@@ -253,15 +261,16 @@ function performfiberOfUnit(fiber) {
 requestIdleCallback(fiberLoop);
 
 function update() {
-  // 新容器
-  wipRoot = {
-    dom: currentRoot.dom,
-    props: currentRoot.props,
-    alternate: currentRoot,
+  let currentFiber = wipFiber;
+  return () => {
+    // 新容器
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    // 新的根结点
+    nextUnitOfWork = wipRoot;
   };
-
-  // 新的根结点
-  nextUnitOfWork = wipRoot;
 }
 
 const React = {
