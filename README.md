@@ -73,6 +73,7 @@
 - 使用 useState 代替了之前收到调用 update
 - 使用数组存储 state 并设置到 fiber 上
 - 满足多个 useState 的需求，通过创建顺序获取目标 state
+- 提前检测，避免相同内容的重复更新
 
 ### 收获
 

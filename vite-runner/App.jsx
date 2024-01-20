@@ -4,9 +4,11 @@ function Foo() {
   const [count, setCount] = React.useState(10);
   const [bar, setBar] = React.useState("bar");
 
+  console.log("foo");
+
   function handleClick() {
     setCount((count) => count + 1);
-    setBar((s) => s + "bar");
+    setBar("bar");
   }
 
   return (

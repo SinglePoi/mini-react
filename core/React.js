@@ -300,6 +300,10 @@ function useState(initial) {
   currentFiber.stateHooks = stateHooks;
 
   function setState(action) {
+    const eagerState =
+      typeof action === "fucntion" ? action(stateHook.state) : action;
+    if (eagerState === stateHook.state) return;
+
     stateHook.queue.push(typeof action === "function" ? action : () => actino);
 
     // 新容器
