@@ -23,6 +23,7 @@
 🎪 Step5 实现事件绑定
 🎀 Step6 更新 props
 🕶️ Step7 更新 children
+💎 Step8 实现 useState
 
 ### 内容
 
@@ -66,6 +67,12 @@
 - 每一个结点在转换链表的过程中，如果存在不存在的老结点，同样需要收集
 - 节点因为表达式的原因值为 false 时，需要跳过这个节点
 - 抽离单独的更新节点，每次更新只更新相关节点
+
+💎 Step8 实现 useState
+
+- 使用 useState 代替了之前收到调用 update
+- 使用数组存储 state 并设置到 fiber 上
+- 满足多个 useState 的需求，通过创建顺序获取目标 state
 
 ### 收获
 

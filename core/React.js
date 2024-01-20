@@ -14,6 +14,10 @@ const EffectTag = Object.freeze({
 let deletions = [];
 /**@description 更新的开始节点 */
 let wipFiber = null;
+/**@description useStateHooks */
+let stateHooks = [];
+/**@description 添加的顺序 */
+let stateHookIndex = 0;
 
 function createTextNode(text) {
   return {
@@ -223,6 +227,8 @@ function reconcileChildren(fiber, children) {
 }
 
 function updateFunctionComponent(fiber) {
+  stateHooks = [];
+  stateHookIndex = 0;
   wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   // DOM 树转换链表
@@ -273,9 +279,36 @@ function update() {
   };
 }
 
+function useState(initial) {
+  let currentFiber = wipFiber;
+  const oldHook = currentFiber.alternate?.stateHooks[stateHookIndex];
+  const stateHook = {
+    state: oldHook ? oldHook.state : initial,
+  };
+
+  stateHookIndex++;
+  stateHooks.push(stateHook);
+
+  currentFiber.stateHooks = stateHooks;
+
+  function setState(action) {
+    stateHook.state = action(stateHook.state);
+    // 新容器
+    wipRoot = {
+      ...currentFiber,
+      alternate: currentFiber,
+    };
+    // 新的根结点
+    nextUnitOfWork = wipRoot;
+  }
+
+  return [stateHook.state, setState];
+}
+
 const React = {
   render,
   update,
+  useState,
   createElement,
 };
 
