@@ -10,6 +10,10 @@ function Foo() {
 
   React.useEffect(() => {
     console.log("udpate", count);
+
+    return () => {
+      console.log("cleanup");
+    };
   }, [count]);
 
   function handleClick() {

@@ -107,18 +107,20 @@ function commitEffectHooks() {
 
     if (!fiber.alternate) {
       // 初始化
-      fiber.effectHooks?.forEach((hook) => hook.callback());
+      fiber.effectHooks?.forEach((hook) => (hook.cleanup = hook.callback()));
     } else {
       fiber.effectHooks?.forEach((newHook, newIndex) => {
-        // 老的 hooks
-        const oldEffectHook = fiber.alternate.effectHooks[newIndex];
+        if (newHook.length > 0) {
+          // 老的 hooks
+          const oldEffectHook = fiber.alternate.effectHooks[newIndex];
 
-        // 是否需要更新
-        const needUpdate = oldEffectHook?.deps.some((oldDep, oldIndex) => {
-          return oldDep !== newHook?.deps[oldIndex];
-        });
+          // 是否需要更新
+          const needUpdate = oldEffectHook?.deps.some((oldDep, oldIndex) => {
+            return oldDep !== newHook?.deps[oldIndex];
+          });
 
-        needUpdate && newHook.callback();
+          needUpdate && (newHook.cleanup = newHook.callback());
+        }
       });
     }
 
@@ -126,6 +128,20 @@ function commitEffectHooks() {
     run(fiber.sibling);
   }
 
+  function cleanup(fiber) {
+    if (!fiber) return;
+
+    fiber.alternate?.effectHooks?.forEach((hook) => {
+      if (hook.deps.length > 0) {
+        hook.cleanup && hook.cleanup();
+      }
+    });
+
+    cleanup(fiber.child);
+    cleanup(fiber.sibling);
+  }
+
+  cleanup(wipRoot);
   run(wipRoot);
 }
 
@@ -357,6 +373,7 @@ function useEffect(callback, deps) {
   const effectHook = {
     callback,
     deps,
+    cleanup: undefined,
   };
 
   effectHooks.push(effectHook);
