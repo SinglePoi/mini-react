@@ -4,7 +4,13 @@ function Foo() {
   const [count, setCount] = React.useState(10);
   const [bar, setBar] = React.useState("bar");
 
-  console.log("foo");
+  React.useEffect(() => {
+    console.log("init");
+  }, []);
+
+  React.useEffect(() => {
+    console.log("udpate", count);
+  }, [count]);
 
   function handleClick() {
     setCount((count) => count + 1);

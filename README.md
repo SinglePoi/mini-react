@@ -23,7 +23,8 @@
 🎪 Step5 实现事件绑定  
 🎀 Step6 更新 props  
 🕶️ Step7 更新 children  
-💎 Step8 实现 useState
+💎 Step8 实现 useState  
+🧸 Step9 实现 useEffect
 
 ### 内容
 
@@ -70,10 +71,16 @@
 
 💎 Step8 实现 useState
 
-- 使用 useState 代替了之前收到调用 update
+- 使用 useState 代替了之前的 update
 - 使用数组存储 state 并设置到 fiber 上
 - 满足多个 useState 的需求，通过创建顺序获取目标 state
 - 提前检测，避免相同内容的重复更新
+
+🧸 Step9 实现 useEffect
+
+- 使用对象来描述一个依赖性和回调函数
+- 使用数组收集这个对象，这个数组会设置在更新节点上
+- 每次触发更新，都会通过对比依赖项的值判断是否需要执行回调函数
 
 ### 收获
 

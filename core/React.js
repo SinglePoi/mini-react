@@ -18,6 +18,8 @@ let wipFiber = null;
 let stateHooks = [];
 /**@description 添加的顺序 */
 let stateHookIndex = 0;
+/**@description 存储 effectHook */
+let effectHooks = [];
 
 function createTextNode(text) {
   return {
@@ -81,6 +83,7 @@ function fiberLoop(deadline) {
 function commitRoot() {
   deletions.forEach(commitDeletion);
   commitWork(wipRoot.child);
+  commitEffectHooks();
   currentRoot = wipRoot;
   wipRoot = null;
   deletions = [];
@@ -93,6 +96,37 @@ function commitDeletion(fiber) {
   } else {
     commitDeletion(fiber.child);
   }
+}
+
+/**
+ * 统一执行 useEffect
+ */
+function commitEffectHooks() {
+  function run(fiber) {
+    if (!fiber) return;
+
+    if (!fiber.alternate) {
+      // 初始化
+      fiber.effectHooks?.forEach((hook) => hook.callback());
+    } else {
+      fiber.effectHooks?.forEach((newHook, newIndex) => {
+        // 老的 hooks
+        const oldEffectHook = fiber.alternate.effectHooks[newIndex];
+
+        // 是否需要更新
+        const needUpdate = oldEffectHook?.deps.some((oldDep, oldIndex) => {
+          return oldDep !== newHook?.deps[oldIndex];
+        });
+
+        needUpdate && newHook.callback();
+      });
+    }
+
+    run(fiber.child);
+    run(fiber.sibling);
+  }
+
+  run(wipRoot);
 }
 
 /**
@@ -229,6 +263,7 @@ function reconcileChildren(fiber, children) {
 function updateFunctionComponent(fiber) {
   stateHooks = [];
   stateHookIndex = 0;
+  effectHooks = [];
   wipFiber = fiber;
   const children = [fiber.type(fiber.props)];
   // DOM 树转换链表
@@ -318,10 +353,22 @@ function useState(initial) {
   return [stateHook.state, setState];
 }
 
+function useEffect(callback, deps) {
+  const effectHook = {
+    callback,
+    deps,
+  };
+
+  effectHooks.push(effectHook);
+
+  wipFiber.effectHooks = effectHooks;
+}
+
 const React = {
   render,
   update,
   useState,
+  useEffect,
   createElement,
 };
 
